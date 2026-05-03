@@ -558,6 +558,15 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 }
 
+/* 새 기록이 Top 10 안에 드는지 — 축하 애니메이션 트리거용 */
+function isTop10(game, rec) {
+  const m = GAME_META[game];
+  const list = loadScores(game).slice();
+  list.sort((a, b) => m.asc ? a[m.key] - b[m.key] : b[m.key] - a[m.key]);
+  const idx = list.findIndex(x => x.ts === rec.ts && x.name === rec.name);
+  return idx >= 0 && idx < 10;
+}
+
 /* 축하 애니메이션 — 동물들이 화면에서 통통 떨어지며 회전 */
 function celebrateWith(icons) {
   const wrap = document.createElement("div");
@@ -774,12 +783,19 @@ function fart() {
       msgEl.className = "msg fail"; msgEl.textContent = "💔 아쉽다!";
       const reached = seq.length - 1;
       if (reached > best) { best = reached; localStorage.setItem("simon-best", best); bestEl.textContent = best; }
+      let celebrated = false;
       if (reached > 0) {
+        const rec = { level: reached, name: playerName, ts: Date.now() };
         saveScore("simon", { level: reached });
         renderBoard("simon", "lb-simon-mini", true);
+        if (isTop10("simon", rec)) {
+          celebrateWith(["🍎","⭐","🎈","🍃","🎵","🌟","🎉"]);
+          celebrated = true;
+        }
       }
       startBtn.textContent = "🔄 다시";
-      setTimeout(() => showModal("🎀", "잘했어!", `레벨 <b>${reached}</b> 까지 갔어! 다시 도전해볼래?`), 400);
+      const delay = celebrated ? 1200 : 400;
+      setTimeout(() => showModal(celebrated ? "🏆" : "🎀", celebrated ? "TOP 10 진입!" : "잘했어!", `레벨 <b>${reached}</b> 까지 갔어! 다시 도전해볼래?`), delay);
       return;
     }
     userIdx++;
@@ -873,12 +889,19 @@ function fart() {
         if (pattern.has(+c.dataset.i)) c.classList.add("show");
       });
       msgEl.className = "msg fail"; msgEl.textContent = "💔 앗! 다음에 또 도전!";
+      let celebrated = false;
       if (score > 0) {
+        const rec = { score, level, name: playerName, ts: Date.now() };
         saveScore("pattern", { score, level });
         renderBoard("pattern", "lb-pattern-mini", true);
+        if (isTop10("pattern", rec)) {
+          celebrateWith(["⭐","✨","💖","🌟","🎀","🌷","🦋","🎉"]);
+          celebrated = true;
+        }
       }
       startBtn.textContent = "🔄 다시";
-      setTimeout(() => showModal("🌷", "잘했어!", `점수 <b>${score}</b>점, 레벨 <b>${level}</b> 도달! 다시 해볼래?`), 400);
+      const delay = celebrated ? 1200 : 400;
+      setTimeout(() => showModal(celebrated ? "🏆" : "🌷", celebrated ? "TOP 10 진입!" : "잘했어!", `점수 <b>${score}</b>점, 레벨 <b>${level}</b> 도달! 다시 해볼래?`), delay);
     }
   }
   startBtn.addEventListener("click", () => {
