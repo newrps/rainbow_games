@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://newrps.github.io/rainbow_games/sitemap.xml
