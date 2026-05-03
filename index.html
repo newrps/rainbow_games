@@ -131,6 +131,24 @@
   .card-pick .ttl { font-size: 38px; font-weight: 900; margin: 6px 0 4px; }
   .card-pick .dsc { font-size: 22px; opacity: 0.85; line-height: 1.35; }
 
+  /* ───── 축하 애니메이션 ───── */
+  .celebrate {
+    position: fixed; inset: 0; pointer-events: none; z-index: 150;
+    overflow: hidden;
+  }
+  .celebrate .pet {
+    position: absolute; top: -120px;
+    font-size: 70px; line-height: 1;
+    animation: confetti 3.2s cubic-bezier(.45,.05,.55,.95) forwards;
+  }
+  @keyframes confetti {
+    0%   { top: -120px; transform: rotate(0deg) scale(1); opacity: 1; }
+    70%  { top: 70vh;   transform: rotate(540deg) scale(1.2); opacity: 1; }
+    80%  { top: 60vh;   transform: rotate(620deg) scale(1.1); }
+    90%  { top: 65vh;   transform: rotate(700deg) scale(1.15); }
+    100% { top: 60vh;   transform: rotate(720deg) scale(1); opacity: 0; }
+  }
+
   /* ───── 게임 공통 stat ───── */
   .stats {
     max-width: 600px; margin: 0 auto 14px;
@@ -540,6 +558,25 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 }
 
+/* 축하 애니메이션 — 동물들이 화면에서 통통 떨어지며 회전 */
+function celebrateWith(icons) {
+  const wrap = document.createElement("div");
+  wrap.className = "celebrate";
+  // 각 동물 2번씩 + 추가 랜덤 한 번 → 더 화려
+  const list = [...icons, ...icons, ...icons.slice(0, 4)];
+  list.forEach((icon, i) => {
+    const s = document.createElement("span");
+    s.className = "pet"; s.textContent = icon;
+    s.style.left = (3 + Math.random() * 92) + "%";
+    s.style.animationDelay = (Math.random() * 0.6) + "s";
+    s.style.animationDuration = (2.6 + Math.random() * 1.4) + "s";
+    s.style.fontSize = (50 + Math.random() * 40) + "px";
+    wrap.appendChild(s);
+  });
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 4500);
+}
+
 /* ───────────── 모달 ───────────── */
 const modalBg  = document.getElementById("modal-bg");
 const modalEmo = document.getElementById("modal-emo");
@@ -679,7 +716,8 @@ function fart() {
         const s = Math.floor((Date.now() - startTs) / 1000);
         saveScore("match", { time: s, moves });
         renderBoard("match", "lb-match-mini", true);
-        setTimeout(() => showModal("🎉", "다 맞췄어!", `${moves}번 만에 <b>${s}초</b> 만에 다 찾았어! 🌟<br>기록에 저장됐어!`), 400);
+        celebrateWith(ICONS);
+        setTimeout(() => showModal("🎉", "다 맞췄어!", `${moves}번 만에 <b>${s}초</b> 만에 다 찾았어! 🌟<br>기록에 저장됐어!`), 1200);
       }
     } else {
       lock = true;
