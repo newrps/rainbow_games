@@ -596,7 +596,7 @@ function fart() {
       a.btn.classList.add("matched"); b.btn.classList.add("matched");
       a.btn.classList.remove("flipped"); b.btn.classList.remove("flipped");
       matched++; pairsEl.textContent = matched;
-      fart();
+      beep(880, 180);
       flipped = [];
       if (matched === 8) {
         clearInterval(timer);
@@ -607,6 +607,7 @@ function fart() {
       }
     } else {
       lock = true;
+      fart();
       setTimeout(() => {
         a.btn.classList.remove("flipped"); b.btn.classList.remove("flipped");
         flipped = []; lock = false;
