@@ -467,10 +467,18 @@ function loadScores(game) {
   catch { return []; }
 }
 function saveScore(game, rec) {
+  const r = { ...rec, name: playerName, ts: Date.now() };
   const list = loadScores(game);
-  list.push({ ...rec, name: playerName, ts: Date.now() });
+  list.push(r);
   localStorage.setItem("scores-" + game, JSON.stringify(list));
+  if (window.fbSaveScore) window.fbSaveScore(game, r);
 }
+window.refreshBoardsAfterFB = function (game) {
+  const active = document.querySelector(".scene.active");
+  if (!active) return;
+  if (active.id === "records") renderAllBoards();
+  if (active.id === game) renderBoard(game, "lb-" + game + "-mini", true);
+};
 function topScores(game, n = 5) {
   const m = GAME_META[game];
   const list = loadScores(game).slice();
@@ -813,6 +821,42 @@ function fart() {
     startBtn.textContent = "🔄 다시"; startRound();
   });
 })();
+</script>
+
+<!-- ═════════════ Firebase Realtime DB (점수 글로벌 공유) ═════════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getDatabase, ref, push, onValue }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTHzLlPdcmaeJW9BtLUuktdvXKlZIGZgw",
+    authDomain: "rainbow-games-3eff3.firebaseapp.com",
+    databaseURL: "https://rainbow-games-3eff3-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "rainbow-games-3eff3",
+    storageBucket: "rainbow-games-3eff3.firebasestorage.app",
+    messagingSenderId: "89599763755",
+    appId: "1:89599763755:web:910c9b2259c033cc43916e",
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // 게임 코드 → 여기로 push
+  window.fbSaveScore = (game, rec) => {
+    push(ref(db, "scores/" + game), rec).catch(e => console.warn("fb push fail", e));
+  };
+
+  // 실시간 listen — 다른 사람이 점수 등록하면 우리 화면도 자동 갱신
+  ["match", "simon", "pattern"].forEach(g => {
+    onValue(ref(db, "scores/" + g), snap => {
+      const list = [];
+      snap.forEach(c => list.push(c.val()));
+      if (list.length > 0) {
+        localStorage.setItem("scores-" + g, JSON.stringify(list));
+      }
+      if (window.refreshBoardsAfterFB) window.refreshBoardsAfterFB(g);
+    });
+  });
 </script>
 </body>
 </html>
