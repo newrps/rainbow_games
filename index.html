@@ -471,7 +471,11 @@ refreshName();
 const scenes = document.querySelectorAll(".scene");
 function go(id) {
   scenes.forEach(s => s.classList.toggle("active", s.id === id));
-  if (id === "records") renderAllBoards();
+  if (id === "records") {
+    renderAllBoards();
+    // 진입 시점에 클라우드에서 한 번 더 받아 갱신
+    syncScoresFromCloud().then(renderAllBoards);
+  }
   if (id === "match")   renderBoard("match",   "lb-match-mini",   true);
   if (id === "simon")   renderBoard("simon",   "lb-simon-mini",   true);
   if (id === "pattern") renderBoard("pattern", "lb-pattern-mini", true);
@@ -554,6 +558,26 @@ function renderAllBoards() {
   renderBoard("simon",   "lb-simon");
   renderBoard("pattern", "lb-pattern");
 }
+
+// REST 로 Firebase 강제 동기화 (SDK listen 보조)
+async function syncScoresFromCloud() {
+  try {
+    const r = await fetch("https://rainbow-games-3eff3-default-rtdb.asia-southeast1.firebasedatabase.app/scores.json");
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data) return;
+    for (const g of ["match", "simon", "pattern"]) {
+      if (data[g]) {
+        const list = Object.values(data[g]);
+        if (list.length > 0) {
+          localStorage.setItem("scores-" + g, JSON.stringify(list));
+        }
+      }
+    }
+  } catch (e) { console.warn("sync fail", e); }
+}
+// 페이지 로드 직후 한 번 동기화
+syncScoresFromCloud();
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 }
