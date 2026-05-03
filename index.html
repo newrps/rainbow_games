@@ -286,6 +286,29 @@
   .lb.mini { margin-top: 14px; }
   .lb.mini h3 { font-size: 24px; }
   .lb.mini table { font-size: 20px; }
+
+  /* ───── 모바일: 게임 화면 한 화면 fit ───── */
+  @media (max-width: 600px) {
+    .scene { padding: 8px 10px 16px; }
+    /* 게임 화면 미니 리더보드는 숨김 (메뉴 🏆 기록 에서 보기) */
+    #match .lb.mini, #simon .lb.mini, #pattern .lb.mini { display: none; }
+    /* 헤더·통계 압축 */
+    .topbar { margin-bottom: 8px; }
+    .topbar h2 { font-size: 26px; }
+    .stats { margin-bottom: 8px; gap: 6px; }
+    .stat { padding: 4px 12px; font-size: 18px; }
+    .stat b { font-size: 22px; }
+    .msg { margin: 8px auto; font-size: 22px; min-height: 22px; }
+    .controls { margin-top: 10px; }
+    .btn { padding: 8px 18px; font-size: 22px; }
+    .back-btn { padding: 6px 14px; font-size: 22px; }
+    /* 그리드/패드 max 사이즈 (작은 폰엔 자동으로 작아짐) */
+    #grid-match { max-width: 360px; gap: 6px; }
+    #pad-simon { max-width: 300px; gap: 10px; }
+    #grid-pattern { max-width: 360px; gap: 5px; }
+    .simon-btn { font-size: 48px; border-radius: 22px; }
+    .mcard { border-radius: 14px; font-size: 32px; }
+  }
 </style>
 </head>
 <body>
