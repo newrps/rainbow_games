@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>두뇌 놀이터 🌈</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink:   #ffb3c6;
+    --pink2:  #ff8fab;
+    --mint:   #a8e6cf;
+    --yellow: #fff3a0;
+    --lavend: #c9a9f0;
+    --sky:    #a0d8f1;
+    --peach:  #ffc8a2;
+    --cream:  #fff8e7;
+    --ink:    #4a3a52;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Dongle", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-weight: 400; font-size: 28px; line-height: 1.2;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, #fff 0 80px, transparent 81px),
+      radial-gradient(circle at 80% 25%, #fff 0 60px, transparent 61px),
+      radial-gradient(circle at 30% 80%, #fff 0 70px, transparent 71px),
+      radial-gradient(circle at 75% 70%, #fff 0 50px, transparent 51px),
+      linear-gradient(180deg, #ffe0ec 0%, #c1f1e8 50%, #fff3a0 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .scene { display: none; min-height: 100vh; padding: 20px 16px 40px; }
+  .scene.active { display: block; }
+
+  /* ───── 공통 헤더 (게임 화면) ───── */
+  .topbar {
+    max-width: 600px; margin: 0 auto 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .back-btn {
+    background: white; border: 3px solid var(--ink); border-radius: 999px;
+    padding: 8px 18px; font-weight: 800; font-size: 24px; color: var(--ink);
+    cursor: pointer; box-shadow: 0 4px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .topbar h2 { flex: 1; text-align: center; margin: 0; font-size: 32px; }
+
+  /* ───── 메뉴 ───── */
+  #menu { text-align: center; }
+  .logo {
+    font-family: "Dongle", sans-serif;
+    font-size: 110px; font-weight: 700; line-height: 1;
+    margin: 24px 0 6px; letter-spacing: 2px;
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 var(--pink2);
+    animation: wobble 2s ease-in-out infinite;
+  }
+  .tagline { font-size: 26px; color: var(--ink); margin: 0 0 28px; opacity: 0.8; }
+  @keyframes wobble {
+    0%,100% { transform: rotate(-1deg); }
+    50%     { transform: rotate(1.5deg); }
+  }
+
+  .cards {
+    display: grid; gap: 18px;
+    max-width: 360px; margin: 0 auto; padding: 0 8px;
+  }
+  .card-pick {
+    background: white; border: 4px solid var(--ink);
+    border-radius: 24px; padding: 22px 18px;
+    cursor: pointer; text-align: center;
+    box-shadow: 0 8px 0 var(--ink);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card-pick:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--ink); }
+  .card-pick.c1 { background: var(--pink); }
+  .card-pick.c2 { background: var(--mint); }
+  .card-pick.c3 { background: var(--lavend); }
+  .card-pick .emo { font-size: 56px; line-height: 1; }
+  .card-pick .ttl { font-size: 38px; font-weight: 900; margin: 6px 0 4px; }
+  .card-pick .dsc { font-size: 22px; opacity: 0.85; line-height: 1.35; }
+
+  /* ───── 게임 공통 stat ───── */
+  .stats {
+    max-width: 600px; margin: 0 auto 14px;
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .stat {
+    background: white; border: 3px solid var(--ink); border-radius: 999px;
+    padding: 6px 18px; font-weight: 800; font-size: 22px;
+    box-shadow: 0 3px 0 var(--ink);
+  }
+  .stat b { color: var(--pink2); margin-left: 4px; font-size: 26px; }
+
+  .msg { text-align: center; margin: 14px auto; min-height: 28px; font-weight: 800; font-size: 26px; }
+  .msg.ok   { color: #16a34a; }
+  .msg.fail { color: #dc2626; }
+  .msg.go   { color: #d97706; }
+  .controls { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+  .btn {
+    background: var(--yellow); border: 4px solid var(--ink); border-radius: 16px;
+    padding: 10px 24px; font-weight: 900; font-size: 26px; color: var(--ink);
+    cursor: pointer; box-shadow: 0 5px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+  .btn.go { background: var(--mint); }
+
+  /* ───── 짝맞추기 ───── */
+  #grid-match {
+    max-width: 480px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .mcard {
+    aspect-ratio: 3/4; border: 4px solid var(--ink); border-radius: 18px;
+    background: var(--lavend); cursor: pointer; user-select: none;
+    font-size: 40px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 5px 0 var(--ink);
+    transition: transform .25s, background .25s;
+    transform-style: preserve-3d;
+  }
+  .mcard:not(.flipped):not(.matched)::before { content: "⭐"; }
+  .mcard.flipped { background: var(--cream); transform: rotateY(180deg); }
+  .mcard.flipped .face { transform: rotateY(180deg); }
+  .mcard.matched {
+    background: var(--mint); cursor: default;
+    animation: pop .4s;
+  }
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15) rotate(5deg); }
+    100% { transform: scale(1); }
+  }
+  .mcard .face { display: none; }
+  .mcard.flipped .face, .mcard.matched .face { display: block; }
+  .mcard.flipped::before, .mcard.matched::before { content: ""; }
+
+  /* ───── 사이먼 ───── */
+  #pad-simon {
+    max-width: 360px; aspect-ratio: 1; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .simon-btn {
+    border: 5px solid var(--ink); border-radius: 28px; cursor: pointer;
+    font-size: 60px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 0 var(--ink);
+    transition: filter .15s, transform .08s;
+    user-select: none;
+  }
+  .simon-btn:disabled { cursor: default; }
+  .simon-btn.s0 { background: #ffb3c6; }   /* 핑크 사과 */
+  .simon-btn.s1 { background: #ffe082; }   /* 노란 별 */
+  .simon-btn.s2 { background: #a0d8f1; }   /* 파란 풍선 */
+  .simon-btn.s3 { background: #a8e6cf; }   /* 초록 잎 */
+  .simon-btn.lit { filter: brightness(1.3) saturate(1.3); transform: scale(0.95); }
+
+  /* ───── 패턴 그리드 ───── */
+  #grid-pattern {
+    max-width: 480px; aspect-ratio: 1; margin: 0 auto;
+    display: grid; gap: 8px;
+  }
+  .pcell {
+    background: var(--cream); border: 3px solid var(--ink); border-radius: 12px;
+    cursor: pointer; transition: background .15s, transform .1s;
+    box-shadow: 0 4px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .pcell:disabled { cursor: default; }
+  .pcell.show { background: var(--yellow); }
+  .pcell.show::before { content: "⭐"; }
+  .pcell.hit  { background: var(--mint); animation: pop .3s; }
+  .pcell.hit::before { content: "💖"; }
+  .pcell.miss { background: var(--pink); }
+  .pcell.miss::before { content: "❌"; }
+
+  /* ───── 모달 (승리/실패) ───── */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal-bg.on { display: flex; }
+  .modal {
+    background: white; border: 5px solid var(--ink); border-radius: 28px;
+    padding: 30px 26px; max-width: 320px; width: 90%; text-align: center;
+    box-shadow: 0 10px 0 var(--ink);
+    animation: pop .35s;
+  }
+  .modal .emo { font-size: 64px; }
+  .modal .ttl { font-size: 36px; font-weight: 900; margin: 8px 0; }
+  .modal .body { font-size: 22px; color: #555; margin-bottom: 18px; line-height: 1.4; }
+  .modal input.name-input {
+    width: 100%; padding: 10px 14px; font-size: 26px; font-weight: 700;
+    border: 3px solid var(--ink); border-radius: 12px; margin-bottom: 14px;
+    font-family: inherit; text-align: center; color: var(--ink);
+  }
+
+  /* ───── 인사 / 기록 버튼 ───── */
+  .greet {
+    max-width: 360px; margin: 0 auto 16px;
+    display: flex; gap: 8px; justify-content: center; align-items: center;
+    flex-wrap: wrap;
+  }
+  .greet-name {
+    background: white; border: 3px solid var(--ink); border-radius: 999px;
+    padding: 6px 18px; font-weight: 800; font-size: 22px;
+    box-shadow: 0 3px 0 var(--ink);
+  }
+  .greet-name b { color: var(--pink2); }
+  .icon-btn {
+    background: white; border: 3px solid var(--ink); border-radius: 999px;
+    padding: 6px 18px; font-weight: 800; font-size: 22px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--ink); color: var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .icon-btn.records { background: var(--yellow); }
+
+  /* ───── 리더보드 ───── */
+  .lb {
+    max-width: 600px; margin: 18px auto;
+    background: white; border: 4px solid var(--ink); border-radius: 20px;
+    box-shadow: 0 6px 0 var(--ink); padding: 14px 18px;
+  }
+  .lb h3 { margin: 0 0 10px; font-size: 28px; text-align: center; }
+  .lb table { width: 100%; border-collapse: collapse; font-size: 22px; }
+  .lb th, .lb td { padding: 6px 4px; text-align: left; }
+  .lb th { color: #777; font-weight: 700; border-bottom: 2px dashed var(--ink); }
+  .lb tr.me { background: var(--cream); font-weight: 800; }
+  .lb td.rank  { text-align: center; width: 36px; font-weight: 800; }
+  .lb td.score { text-align: right; font-weight: 800; }
+  .lb .empty { text-align: center; color: #999; padding: 16px 0; font-size: 22px; }
+
+  /* 게임 화면 하단 미니 리더보드 */
+  .lb.mini { margin-top: 14px; }
+  .lb.mini h3 { font-size: 24px; }
+  .lb.mini table { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ 메뉴 ═══════════ -->
+<section class="scene active" id="menu">
+  <div class="logo">🌈 두뇌 놀이터</div>
+  <p class="tagline">셋 중 하나 골라서 시작! 🚀</p>
+
+  <div class="greet">
+    <div class="greet-name">🌟 안녕, <b id="hello-name">친구</b>!</div>
+    <button class="icon-btn" id="change-name">✏️ 이름</button>
+    <button class="icon-btn records" data-go="records">🏆 기록</button>
+  </div>
+
+  <div class="cards">
+    <div class="card-pick c1" data-go="match">
+      <div class="emo">🐶🐱</div>
+      <div class="ttl">짝맞추기</div>
+      <div class="dsc">똑같은 동물 친구를<br>찾아보자!</div>
+    </div>
+    <div class="card-pick c2" data-go="simon">
+      <div class="emo">🍎⭐🎈🍃</div>
+      <div class="ttl">따라하기</div>
+      <div class="dsc">반짝반짝 순서대로<br>눌러봐!</div>
+    </div>
+    <div class="card-pick c3" data-go="pattern">
+      <div class="emo">✨🟨✨</div>
+      <div class="ttl">별찾기</div>
+      <div class="dsc">반짝였던 칸을<br>기억해서 눌러줘!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 기록 화면 ═══════════ -->
+<section class="scene" id="records">
+  <div class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <h2>🏆 명예의 전당</h2>
+    <span style="width: 48px"></span>
+  </div>
+  <div class="lb" id="lb-match"></div>
+  <div class="lb" id="lb-simon"></div>
+  <div class="lb" id="lb-pattern"></div>
+</section>
+
+<!-- ═══════════ 짝맞추기 ═══════════ -->
+<section class="scene" id="match">
+  <div class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <h2>🐶 짝맞추기 🐱</h2>
+    <span style="width: 48px"></span>
+  </div>
+  <div class="stats">
+    <div class="stat">이동 <b id="m-moves">0</b></div>
+    <div class="stat">짝 <b id="m-pairs">0</b>/8</div>
+    <div class="stat">⏱️ <b id="m-time">0</b>초</div>
+  </div>
+  <div id="grid-match"></div>
+  <div class="controls">
+    <button class="btn" id="m-restart">🔄 다시</button>
+  </div>
+  <div class="lb mini" id="lb-match-mini"></div>
+</section>
+
+<!-- ═══════════ 사이먼 (따라하기) ═══════════ -->
+<section class="scene" id="simon">
+  <div class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <h2>🎵 따라하기</h2>
+    <span style="width: 48px"></span>
+  </div>
+  <div class="stats">
+    <div class="stat">레벨 <b id="s-level">0</b></div>
+    <div class="stat">최고 <b id="s-best">0</b></div>
+  </div>
+  <div id="pad-simon">
+    <button class="simon-btn s0" data-c="0" disabled>🍎</button>
+    <button class="simon-btn s1" data-c="1" disabled>⭐</button>
+    <button class="simon-btn s2" data-c="2" disabled>🎈</button>
+    <button class="simon-btn s3" data-c="3" disabled>🍃</button>
+  </div>
+  <div class="msg" id="s-msg">🎵 시작 버튼을 눌러봐!</div>
+  <div class="controls">
+    <button class="btn go" id="s-start">▶️ 시작</button>
+  </div>
+  <div class="lb mini" id="lb-simon-mini"></div>
+</section>
+
+<!-- ═══════════ 별찾기 (패턴 그리드) ═══════════ -->
+<section class="scene" id="pattern">
+  <div class="topbar">
+    <button class="back-btn" data-back>←</button>
+    <h2>✨ 별찾기 ✨</h2>
+    <span style="width: 48px"></span>
+  </div>
+  <div class="stats">
+    <div class="stat">레벨 <b id="p-level">1</b></div>
+    <div class="stat">점수 <b id="p-score">0</b></div>
+    <div class="stat">최고 <b id="p-best">0</b></div>
+  </div>
+  <div id="grid-pattern"></div>
+  <div class="msg" id="p-msg">✨ 시작 버튼을 눌러봐!</div>
+  <div class="controls">
+    <button class="btn go" id="p-start">▶️ 시작</button>
+  </div>
+  <div class="lb mini" id="lb-pattern-mini"></div>
+</section>
+
+<!-- ═══════════ 모달 ═══════════ -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="emo" id="modal-emo">🎉</div>
+    <div class="ttl" id="modal-ttl">잘했어!</div>
+    <div class="body" id="modal-body"></div>
+    <button class="btn go" id="modal-close">계속</button>
+  </div>
+</div>
+
+<script>
+/* ───────────── 이름 ───────────── */
+const NAME_KEY = "player-name";
+let playerName = localStorage.getItem(NAME_KEY) || "";
+const helloEl = document.getElementById("hello-name");
+function refreshName() {
+  helloEl.textContent = playerName || "친구";
+}
+async function askName(force = false) {
+  if (playerName && !force) return playerName;
+  const v = await promptModal("👋 이름 알려줘!", "두 글자 이상으로~", playerName || "");
+  if (v && v.trim()) {
+    playerName = v.trim().slice(0, 12);
+    localStorage.setItem(NAME_KEY, playerName);
+    refreshName();
+  }
+  return playerName;
+}
+document.getElementById("change-name").addEventListener("click", () => askName(true));
+refreshName();
+
+/* ───────────── 화면 전환 ───────────── */
+const scenes = document.querySelectorAll(".scene");
+function go(id) {
+  scenes.forEach(s => s.classList.toggle("active", s.id === id));
+  if (id === "records") renderAllBoards();
+  if (id === "match")   renderBoard("match",   "lb-match-mini",   true);
+  if (id === "simon")   renderBoard("simon",   "lb-simon-mini",   true);
+  if (id === "pattern") renderBoard("pattern", "lb-pattern-mini", true);
+}
+document.querySelectorAll("[data-go]").forEach(el => {
+  el.addEventListener("click", async () => {
+    if (!playerName) await askName(true);
+    if (!playerName) return;
+    go(el.dataset.go);
+  });
+});
+document.querySelectorAll("[data-back]").forEach(el => {
+  el.addEventListener("click", () => go("menu"));
+});
+
+/* ───────────── 점수 저장/렌더 ───────────── */
+const GAME_META = {
+  match: {
+    title: "🐶 짝맞추기", asc: true, key: "time",
+    cols: [
+      { label: "⏱️ 시간", align: "right", fn: r => `${r.time}초` },
+      { label: "🎯 시도", align: "right", fn: r => `${r.moves}회` },
+    ],
+  },
+  simon: {
+    title: "🎵 따라하기", asc: false, key: "level",
+    cols: [{ label: "기록", align: "right", fn: r => `레벨 ${r.level}` }],
+  },
+  pattern: {
+    title: "✨ 별찾기", asc: false, key: "score",
+    cols: [
+      { label: "점수", align: "right", fn: r => `${r.score}점` },
+      { label: "레벨", align: "right", fn: r => `Lv ${r.level}` },
+    ],
+  },
+};
+function loadScores(game) {
+  try { return JSON.parse(localStorage.getItem("scores-" + game) || "[]"); }
+  catch { return []; }
+}
+function saveScore(game, rec) {
+  const list = loadScores(game);
+  list.push({ ...rec, name: playerName, ts: Date.now() });
+  localStorage.setItem("scores-" + game, JSON.stringify(list));
+}
+function topScores(game, n = 5) {
+  const m = GAME_META[game];
+  const list = loadScores(game).slice();
+  list.sort((a, b) => m.asc ? a[m.key] - b[m.key] : b[m.key] - a[m.key]);
+  return list.slice(0, n);
+}
+function renderBoard(game, elId, mini = false) {
+  const m = GAME_META[game];
+  const top = topScores(game, mini ? 3 : 5);
+  const el = document.getElementById(elId);
+  if (top.length === 0) {
+    el.innerHTML = `<h3>${m.title}</h3><div class="empty">아직 기록이 없어 — 첫 기록을 남겨보자! 🎀</div>`;
+    return;
+  }
+  const headCols = m.cols.map(c => `<th style="text-align:${c.align}">${c.label}</th>`).join("");
+  let html = `<h3>${m.title}</h3><table><thead><tr><th>#</th><th>이름</th>${headCols}</tr></thead><tbody>`;
+  top.forEach((r, i) => {
+    const me = r.name === playerName ? " class=me" : "";
+    const dataCols = m.cols.map(c => `<td class=score>${c.fn(r)}</td>`).join("");
+    html += `<tr${me}><td class=rank>${i+1}</td><td>${escapeHtml(r.name)}</td>${dataCols}</tr>`;
+  });
+  html += "</tbody></table>";
+  el.innerHTML = html;
+}
+function renderAllBoards() {
+  renderBoard("match",   "lb-match");
+  renderBoard("simon",   "lb-simon");
+  renderBoard("pattern", "lb-pattern");
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+}
+
+/* ───────────── 모달 ───────────── */
+const modalBg  = document.getElementById("modal-bg");
+const modalEmo = document.getElementById("modal-emo");
+const modalTtl = document.getElementById("modal-ttl");
+const modalBody= document.getElementById("modal-body");
+const modalCloseBtn = document.getElementById("modal-close");
+let modalResolve = null;
+modalCloseBtn.addEventListener("click", () => {
+  const input = document.querySelector("#modal-bg input.name-input");
+  const val = input ? input.value : null;
+  modalBg.classList.remove("on");
+  if (modalResolve) { const r = modalResolve; modalResolve = null; r(val); }
+});
+function showModal(emo, ttl, body) {
+  modalEmo.textContent  = emo;
+  modalTtl.textContent  = ttl;
+  modalBody.innerHTML   = body;
+  modalCloseBtn.textContent = "계속";
+  modalBg.classList.add("on");
+}
+function promptModal(ttl, hint, defaultVal = "") {
+  return new Promise(res => {
+    modalEmo.textContent = "✏️";
+    modalTtl.textContent = ttl;
+    modalBody.innerHTML = `<div style="margin-bottom:8px">${hint}</div>` +
+      `<input class="name-input" type="text" maxlength="12" value="${escapeHtml(defaultVal)}" />`;
+    modalCloseBtn.textContent = "확인";
+    modalBg.classList.add("on");
+    setTimeout(() => {
+      const inp = document.querySelector("#modal-bg input.name-input");
+      if (inp) { inp.focus(); inp.select(); }
+    }, 50);
+    modalResolve = res;
+  });
+}
+
+/* ───────────── 공용 ───────────── */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const shuffle = arr => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+let ac;
+function beep(freq, ms = 250) {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ac.createOscillator(); const g = ac.createGain();
+  o.frequency.value = freq; o.type = "sine";
+  g.gain.value = 0.0001;
+  o.connect(g); g.connect(ac.destination); o.start();
+  g.gain.exponentialRampToValueAtTime(0.18, ac.currentTime + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + ms / 1000);
+  o.stop(ac.currentTime + ms / 1000 + 0.05);
+}
+// 뿌욱/뿌직 — 짧은 sawtooth + vibrato + 주파수 하강
+function fart() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  const t0 = ac.currentTime;
+  const dur = 0.32 + Math.random() * 0.25;     // 0.32~0.57s
+  const startF = 100 + Math.random() * 80;     // 100~180 Hz
+  const endF   = 50  + Math.random() * 30;     // 50~80 Hz
+  const vibFreq = 18 + Math.random() * 18;     // 18~36 Hz (뿌직거림)
+  const vibAmt  = 25 + Math.random() * 25;
+
+  const o = ac.createOscillator();
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(startF, t0);
+  o.frequency.exponentialRampToValueAtTime(endF, t0 + dur);
+
+  const lfo = ac.createOscillator();
+  lfo.type = "square"; lfo.frequency.value = vibFreq;
+  const lfoG = ac.createGain(); lfoG.gain.value = vibAmt;
+  lfo.connect(lfoG); lfoG.connect(o.frequency);
+
+  const g = ac.createGain(); g.gain.value = 0.0001;
+  g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+  o.connect(g); g.connect(ac.destination);
+  o.start(t0); lfo.start(t0);
+  o.stop(t0 + dur + 0.05); lfo.stop(t0 + dur + 0.05);
+}
+
+/* ═════════════ 짝맞추기 ═════════════ */
+(function() {
+  const ICONS = ["🐶","🐱","🐰","🐻","🦊","🐼","🦁","🐯"];
+  const grid    = document.getElementById("grid-match");
+  const movesEl = document.getElementById("m-moves");
+  const pairsEl = document.getElementById("m-pairs");
+  const timeEl  = document.getElementById("m-time");
+  const restart = document.getElementById("m-restart");
+
+  let cards = [], flipped = [], moves = 0, matched = 0, lock = false, startTs = 0, timer = null;
+
+  function init() {
+    cards = shuffle([...ICONS, ...ICONS]);
+    flipped = []; moves = 0; matched = 0; lock = false;
+    movesEl.textContent = "0"; pairsEl.textContent = "0"; timeEl.textContent = "0";
+    grid.innerHTML = "";
+    cards.forEach((icon) => {
+      const b = document.createElement("button");
+      b.className = "mcard";
+      b.innerHTML = `<span class="face">${icon}</span>`;
+      b.addEventListener("click", () => onClick(b, icon));
+      grid.appendChild(b);
+    });
+    if (timer) clearInterval(timer);
+    startTs = 0;
+  }
+  function startTimer() {
+    if (startTs) return;
+    startTs = Date.now();
+    timer = setInterval(() => {
+      timeEl.textContent = Math.floor((Date.now() - startTs) / 1000);
+    }, 250);
+  }
+  function onClick(btn, icon) {
+    if (lock) return;
+    if (btn.classList.contains("flipped") || btn.classList.contains("matched")) return;
+    startTimer();
+    btn.classList.add("flipped");
+    beep(440 + Math.random() * 200, 100);
+    flipped.push({btn, icon});
+    if (flipped.length < 2) return;
+    moves++; movesEl.textContent = moves;
+    const [a, b] = flipped;
+    if (a.icon === b.icon) {
+      a.btn.classList.add("matched"); b.btn.classList.add("matched");
+      a.btn.classList.remove("flipped"); b.btn.classList.remove("flipped");
+      matched++; pairsEl.textContent = matched;
+      fart();
+      flipped = [];
+      if (matched === 8) {
+        clearInterval(timer);
+        const s = Math.floor((Date.now() - startTs) / 1000);
+        saveScore("match", { time: s, moves });
+        renderBoard("match", "lb-match-mini", true);
+        setTimeout(() => showModal("🎉", "다 맞췄어!", `${moves}번 만에 <b>${s}초</b> 만에 다 찾았어! 🌟<br>기록에 저장됐어!`), 400);
+      }
+    } else {
+      lock = true;
+      setTimeout(() => {
+        a.btn.classList.remove("flipped"); b.btn.classList.remove("flipped");
+        flipped = []; lock = false;
+      }, 700);
+    }
+  }
+  restart.addEventListener("click", init);
+  init();
+})();
+
+/* ═════════════ 사이먼 ═════════════ */
+(function() {
+  const FREQ = [329.63, 261.63, 392.00, 523.25];
+  const padBtns = [...document.querySelectorAll(".simon-btn")];
+  const levelEl = document.getElementById("s-level");
+  const bestEl  = document.getElementById("s-best");
+  const msgEl   = document.getElementById("s-msg");
+  const startBtn= document.getElementById("s-start");
+
+  let seq = [], userIdx = 0, playing = false;
+  let best = +(localStorage.getItem("simon-best") || 0);
+  bestEl.textContent = best;
+
+  async function flash(idx, ms) {
+    return new Promise(res => {
+      const b = padBtns[idx];
+      b.classList.add("lit"); beep(FREQ[idx], ms);
+      setTimeout(() => { b.classList.remove("lit"); res(); }, ms);
+    });
+  }
+  async function nextRound() {
+    seq.push(Math.floor(Math.random() * 4));
+    levelEl.textContent = seq.length;
+    msgEl.className = "msg"; msgEl.textContent = "👀 잘 봐~";
+    padBtns.forEach(b => b.disabled = true);
+    await sleep(600);
+    const speed = Math.max(220, 520 - seq.length * 12);
+    for (const idx of seq) { await flash(idx, speed); await sleep(speed * 0.4); }
+    msgEl.className = "msg go"; msgEl.textContent = "🌟 너 차례!";
+    padBtns.forEach(b => b.disabled = false);
+    userIdx = 0; playing = true;
+  }
+  function onPad(e) {
+    if (!playing) return;
+    const idx = +e.currentTarget.dataset.c;
+    flash(idx, 220);
+    if (idx !== seq[userIdx]) {
+      playing = false;
+      padBtns.forEach(b => b.disabled = true);
+      msgEl.className = "msg fail"; msgEl.textContent = "💔 아쉽다!";
+      const reached = seq.length - 1;
+      if (reached > best) { best = reached; localStorage.setItem("simon-best", best); bestEl.textContent = best; }
+      if (reached > 0) {
+        saveScore("simon", { level: reached });
+        renderBoard("simon", "lb-simon-mini", true);
+      }
+      startBtn.textContent = "🔄 다시";
+      setTimeout(() => showModal("🎀", "잘했어!", `레벨 <b>${reached}</b> 까지 갔어! 다시 도전해볼래?`), 400);
+      return;
+    }
+    userIdx++;
+    if (userIdx === seq.length) {
+      playing = false;
+      padBtns.forEach(b => b.disabled = true);
+      setTimeout(nextRound, 600);
+    }
+  }
+  padBtns.forEach(b => b.addEventListener("click", onPad));
+  startBtn.addEventListener("click", () => {
+    seq = []; userIdx = 0; levelEl.textContent = 0;
+    startBtn.textContent = "🔄 다시"; nextRound();
+  });
+})();
+
+/* ═════════════ 별찾기 ═════════════ */
+(function() {
+  const grid    = document.getElementById("grid-pattern");
+  const levelEl = document.getElementById("p-level");
+  const scoreEl = document.getElementById("p-score");
+  const bestEl  = document.getElementById("p-best");
+  const msgEl   = document.getElementById("p-msg");
+  const startBtn= document.getElementById("p-start");
+
+  let level = 1, score = 0;
+  let best = +(localStorage.getItem("pattern-best") || 0);
+  bestEl.textContent = best;
+
+  let pattern = new Set(), remaining = new Set(), lock = true;
+
+  function configFor(level) {
+    if (level <= 3)  return { size: 4, count: level + 2 };
+    if (level <= 6)  return { size: 5, count: level + 2 };
+    if (level <= 10) return { size: 6, count: level + 2 };
+    return { size: 7, count: level + 2 };
+  }
+  function buildGrid(size) {
+    grid.innerHTML = "";
+    grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    for (let i = 0; i < size * size; i++) {
+      const b = document.createElement("button");
+      b.className = "pcell"; b.disabled = true; b.dataset.i = i;
+      b.addEventListener("click", () => onClick(b));
+      grid.appendChild(b);
+    }
+  }
+  function pickPattern(size, count) {
+    const s = new Set();
+    while (s.size < count) s.add(Math.floor(Math.random() * size * size));
+    return s;
+  }
+  async function startRound() {
+    const { size, count } = configFor(level);
+    buildGrid(size);
+    pattern = pickPattern(size, count);
+    remaining = new Set(pattern);
+    levelEl.textContent = level;
+    msgEl.className = "msg"; msgEl.textContent = `⭐ ${count}개를 외우자!`;
+    lock = true;
+    const cells = [...grid.children];
+    for (const i of pattern) cells[i].classList.add("show");
+    beep(660, 200);
+    const showMs = Math.max(900, 1800 - level * 90);
+    await sleep(showMs);
+    for (const i of pattern) cells[i].classList.remove("show");
+    msgEl.className = "msg go"; msgEl.textContent = "🌟 누르자!";
+    cells.forEach(c => c.disabled = false);
+    lock = false;
+  }
+  function onClick(btn) {
+    if (lock) return;
+    const i = +btn.dataset.i;
+    btn.disabled = true;
+    if (pattern.has(i)) {
+      btn.classList.add("hit"); beep(800, 120);
+      remaining.delete(i);
+      score += 1; scoreEl.textContent = score;
+      if (remaining.size === 0) {
+        lock = true;
+        msgEl.className = "msg ok"; msgEl.textContent = `✨ 통과! 다음 단계~`;
+        if (level > best) { best = level; localStorage.setItem("pattern-best", best); bestEl.textContent = best; }
+        level++;
+        setTimeout(startRound, 900);
+      }
+    } else {
+      btn.classList.add("miss"); beep(180, 220);
+      lock = true;
+      [...grid.children].forEach(c => {
+        c.disabled = true;
+        if (pattern.has(+c.dataset.i)) c.classList.add("show");
+      });
+      msgEl.className = "msg fail"; msgEl.textContent = "💔 앗! 다음에 또 도전!";
+      if (score > 0) {
+        saveScore("pattern", { score, level });
+        renderBoard("pattern", "lb-pattern-mini", true);
+      }
+      startBtn.textContent = "🔄 다시";
+      setTimeout(() => showModal("🌷", "잘했어!", `점수 <b>${score}</b>점, 레벨 <b>${level}</b> 도달! 다시 해볼래?`), 400);
+    }
+  }
+  startBtn.addEventListener("click", () => {
+    level = 1; score = 0;
+    scoreEl.textContent = "0"; levelEl.textContent = "1";
+    startBtn.textContent = "🔄 다시"; startRound();
+  });
+})();
+</script>
+</body>
+</html>
