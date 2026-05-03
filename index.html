@@ -287,8 +287,8 @@
   .lb.mini h3 { font-size: 24px; }
   .lb.mini table { font-size: 20px; }
 
-  /* ───── 모바일: 게임 화면 한 화면 fit ───── */
-  @media (max-width: 600px) {
+  /* ───── 모바일·패드: 게임 화면 한 화면 fit ───── */
+  @media (max-width: 1024px), (pointer: coarse) {
     .scene { padding: 8px 10px 16px; }
     /* 게임 화면 미니 리더보드는 숨김 (메뉴 🏆 기록 에서 보기) */
     #match .lb.mini, #simon .lb.mini, #pattern .lb.mini { display: none; }
