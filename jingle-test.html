@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Jingle 미리듣기</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: linear-gradient(180deg, #ffe0ec, #c1f1e8);
+    min-height: 100vh; margin: 0; padding: 24px;
+    color: #4a3a52;
+  }
+  h1 { text-align: center; font-size: 26px; margin: 0 0 24px; }
+  .grid {
+    max-width: 560px; margin: 0 auto;
+    display: grid; gap: 14px;
+  }
+  .row {
+    background: white; border: 3px solid #4a3a52; border-radius: 16px;
+    padding: 14px 18px; box-shadow: 0 5px 0 #4a3a52;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .row .num {
+    font-size: 22px; font-weight: 800; color: #ff8fab;
+    width: 36px; text-align: center;
+  }
+  .row .info { flex: 1; }
+  .row .ttl { font-size: 16px; font-weight: 800; }
+  .row .sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .row button {
+    background: #fff3a0; border: 3px solid #4a3a52; border-radius: 12px;
+    padding: 10px 16px; font-size: 16px; font-weight: 800; color: #4a3a52;
+    cursor: pointer; box-shadow: 0 4px 0 #4a3a52;
+  }
+  .row button:active { transform: translateY(3px); box-shadow: 0 1px 0 #4a3a52; }
+  p.note { text-align: center; font-size: 13px; color: #888; margin-top: 24px; }
+</style>
+</head>
+<body>
+<h1>🎵 축하 멜로디 미리듣기</h1>
+
+<div class="grid">
+  <div class="row">
+    <div class="num">v1</div>
+    <div class="info">
+      <div class="ttl">잔잔한 ascending/descending</div>
+      <div class="sub">BPM 130 · 약 6초 · 도-미-솔-도 패턴 3번</div>
+    </div>
+    <button onclick="playV1()">▶️</button>
+  </div>
+
+  <div class="row">
+    <div class="num">v2</div>
+    <div class="info">
+      <div class="ttl">통통 4마디 모티브</div>
+      <div class="sub">BPM 130 · 약 6초 · 점프 + 베이스</div>
+    </div>
+    <button onclick="playV2()">▶️</button>
+  </div>
+
+  <div class="row">
+    <div class="num">v3</div>
+    <div class="info">
+      <div class="ttl">더 신나게! (C7 high)</div>
+      <div class="sub">BPM 150 · 약 4초 · 화음 + 16분음표 + 하이노트 끝맺음</div>
+    </div>
+    <button onclick="playV3()">▶️</button>
+  </div>
+</div>
+
+<p class="note">마음에 드는 번호 알려줘! 새 버전이 생기면 아래 계속 추가 🌈</p>
+
+<script>
+let ac;
+function playTone(start, freq, dur, type, vol) {
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.frequency.value = freq;
+  o.type = type;
+  o.connect(g); g.connect(ac.destination);
+  o.start(start);
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(vol, start + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  o.stop(start + dur + 0.02);
+}
+function ensureAC() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// ───── v1: 잔잔한 ascending/descending ─────
+function playV1() {
+  ensureAC();
+  const t0 = ac.currentTime;
+  const notes = [
+    [523.25, 0.00, 0.18], [659.25, 0.20, 0.18], [783.99, 0.40, 0.18], [1046.5, 0.60, 0.36],
+    [783.99, 1.00, 0.18], [659.25, 1.20, 0.18], [523.25, 1.40, 0.36],
+    [587.33, 1.80, 0.18], [698.46, 2.00, 0.18], [880.00, 2.20, 0.18], [1174.7, 2.40, 0.36],
+    [880.00, 2.80, 0.18], [698.46, 3.00, 0.18], [587.33, 3.20, 0.36],
+    [659.25, 3.60, 0.18], [783.99, 3.80, 0.18], [1046.5, 4.00, 0.18], [1318.5, 4.20, 0.36],
+    [1046.5, 4.60, 0.18], [783.99, 4.80, 0.18], [659.25, 5.00, 0.36],
+    [523.25, 5.40, 0.60],
+  ];
+  const bass = [
+    [130.81, 0.0, 0.6], [130.81, 0.6, 0.4],
+    [146.83, 1.8, 0.6], [146.83, 2.4, 0.6],
+    [164.81, 3.6, 0.6], [164.81, 4.2, 0.4],
+    [130.81, 5.0, 0.9],
+  ];
+  notes.forEach(([f, t, d]) => playTone(t0 + t, f, d, "triangle", 0.18));
+  bass.forEach(([f, t, d]) => playTone(t0 + t, f, d, "sine", 0.10));
+}
+
+// ───── v2: 통통 4마디 모티브 ─────
+function playV2() {
+  ensureAC();
+  const t0 = ac.currentTime;
+  const N = (b) => b * 0.23;
+  const m = [];
+  m.push([523, 0, 0.18], [659, 0.5, 0.18], [784, 1, 0.18], [1047, 1.5, 0.34]);
+  m.push([587, 2, 0.18], [659, 2.5, 0.18], [784, 3, 0.55]);
+  m.push([784, 3.7, 0.18], [880, 4.2, 0.18], [784, 4.7, 0.18], [659, 5.2, 0.34]);
+  m.push([523, 5.7, 0.18], [587, 6.2, 0.18], [659, 6.7, 0.55]);
+  m.push([659, 7.4, 0.18], [784, 7.9, 0.18], [1047, 8.4, 0.18], [1319, 8.9, 0.34]);
+  m.push([1175, 9.4, 0.18], [1047, 9.9, 0.55]);
+  m.push([784, 10.6, 0.18], [659, 11.1, 0.18], [523, 11.6, 0.18], [1047, 12.1, 0.9]);
+  const b = [
+    [131, 0, 1.5], [196, 1.5, 1.5], [131, 3, 1.7],
+    [131, 4.7, 1.5], [196, 6.2, 1.7],
+    [165, 7.4, 1.5], [196, 8.9, 1.7],
+    [131, 10.6, 2.4],
+  ];
+  m.forEach(([f, t, d]) => playTone(t0 + N(t), f, N(d) * 4.3, "triangle", 0.20));
+  b.forEach(([f, t, d]) => playTone(t0 + N(t), f, N(d) * 4.3, "sine", 0.13));
+}
+
+// ───── v3: 더 신나게! BPM 150 + 화음 + 16분 + C7 ─────
+function playV3() {
+  ensureAC();
+  const t0 = ac.currentTime;
+  const beat = 0.2;
+  const N = (b) => b * beat;
+  const m = [
+    [523, 0, 1], [659, 1, 1], [784, 2, 1], [1047, 3, 2],
+    [880, 5, 1], [1047, 6, 1], [1319, 7, 2],
+    [1047, 9, 0.5], [1175, 9.5, 0.5], [1319, 10, 0.5], [1568, 10.5, 0.5],
+    [1319, 11, 1], [1047, 12, 1],
+    [880, 13, 1], [1047, 14, 1], [1319, 15, 1], [1568, 16, 1],
+    [2093, 17, 3],
+  ];
+  const h = [
+    [659, 0, 1], [784, 1, 1], [988, 2, 1], [1319, 3, 2],
+    [1047, 5, 1], [1319, 6, 1], [1568, 7, 2],
+    [1568, 13, 4], [1319, 17, 3],
+  ];
+  const b = [
+    [131, 0, 1], [196, 1, 1], [131, 2, 1], [261, 3, 2],
+    [196, 5, 1], [261, 6, 1], [196, 7, 2],
+    [131, 9, 2], [196, 11, 2],
+    [131, 13, 1], [196, 14, 1], [131, 15, 1], [196, 16, 1],
+    [131, 17, 3],
+  ];
+  m.forEach(([f, t, d]) => playTone(t0 + N(t), f, N(d) * 0.95, "triangle", 0.22));
+  h.forEach(([f, t, d]) => playTone(t0 + N(t), f, N(d) * 0.95, "sine",     0.10));
+  b.forEach(([f, t, d]) => playTone(t0 + N(t), f, N(d) * 0.95, "sine",     0.16));
+}
+</script>
+</body>
+</html>
